@@ -1,0 +1,16 @@
+# 敏感信息
+.env
+*.cookie
+secrets/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# 调试产物（GitHub Actions 会以 artifact 上传，不入库）
+logs/
+*.png
+*.html
+pytest_cache/
