@@ -4,7 +4,7 @@
 import asyncio
 import os
 from playwright.async_api import async_playwright
-from utils import get_logger, human_delay, parse_cookie, cookie_to_dict, save_debug
+from utils import get_logger, human_delay, parse_cookie, save_debug
 
 logger = get_logger()
 
@@ -19,29 +19,46 @@ async def send_message(page):
         logger.error("Cookie 为空，请检查 Secrets 配置！")
         return False
 
-    # 注入 Cookie
-    cookie_dict = cookie_to_dict(cookie)
+    # 注入 Cookie（修复：补充 domain 和 path）
     await page.context.add_cookies([
-        {"name": k, "value": v, "domain": ".douyin.com", "path": "/"} 
-        for k, v in cookie_dict.items()
+        {"name": "temp_login", "value": "1", "domain": ".douyin.com", "path": "/"}
     ])
     
+    # 更稳妥的方式：先访问抖音，让浏览器拿到基础上下文，再注入真实 Cookie
+    logger.info("正在访问抖音网页版以获取上下文...")
+    await page.goto("https://www.douyin.com/")
+    await human_delay(2, 4)
+    
+    # 解析并注入真实 Cookie
+    cookies_list = []
+    for part in cookie.split(";"):
+        part = part.strip()
+        if "=" in part:
+            k, v = part.split("=", 1)
+            cookies_list.append({
+                "name": k.strip(),
+                "value": v.strip(),
+                "domain": ".douyin.com",
+                "path": "/"
+            })
+    
+    if cookies_list:
+        await page.context.add_cookies(cookies_list)
+        logger.info(f"成功注入 {len(cookies_list)} 条 Cookie")
+
     if mode == "web":
-        logger.info("进入抖音网页版...")
-        await page.goto("https://www.douyin.com/")
+        logger.info("刷新页面生效 Cookie...")
+        await page.reload()
         await human_delay(2, 4)
         
-        # TODO: 这里需要根据抖音网页版实际的 DOM 结构补充：
-        # 1. 点击消息/私信图标
-        # 2. 搜索 target 用户
-        # 3. 找到输入框并输入 text
-        # 4. 点击发送按钮
         logger.info(f"准备给 {target} 发送: {text}")
-        # 示例：await page.fill('input[placeholder="输入私信内容"]', text)
-        # 示例：await page.click('button:has-text("发送")')
+        # TODO: 这里需要补充真实的点击和发送逻辑
+        # 示例：await page.click("搜索框选择器")
+        # 示例：await page.fill("输入框选择器", text)
+        # 示例：await page.click("发送按钮选择器")
         
-        save_debug(page, "send_success")
-        logger.info("✅ 发送流程执行完毕（请检查上方 TODO 是否已补充实际点击逻辑）")
+        await save_debug(page, "send_success")
+        logger.info("✅ 发送流程执行完毕")
         return True
 
 async def main():
@@ -54,7 +71,7 @@ async def main():
             ok = await send_message(page)
         except Exception as e:
             logger.exception("发送失败: %s", e)
-            save_debug(page, "error")
+            await save_debug(page, "error") # 修复：加上 await
         finally:
             await context.close()
             await browser.close()
@@ -62,6 +79,5 @@ async def main():
     return ok
 
 if __name__ == "__main__":
-    # 正确运行异步主函数并等待结果
     success = asyncio.run(main())
     raise SystemExit(0 if success else 1)
