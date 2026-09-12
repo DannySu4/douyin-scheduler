@@ -17,7 +17,7 @@
 import time
 import requests
 
-from config import config
+from config import config  # 现在 config 是全局实例
 from utils import get_logger, mask_cookie
 
 log = get_logger()
@@ -31,7 +31,7 @@ def _build_headers() -> dict:
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
             "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         ),
-        "Cookie": config.COOKIE,
+        "Cookie": config.COOKIE,  # 现在 COOKIE 属性已定义
         "Referer": "https://www.douyin.com/im/",
         "Content-Type": "application/json; charset=utf-8",
         # ⚠️ 以下签名参数必须从抓包请求里原样复制，缺一不可
@@ -56,7 +56,7 @@ def send_via_http(text: str = None) -> bool:
     用纯 HTTP 请求发送私信，无需浏览器。
     返回是否成功（按业务字段判断，不止看 200）。
     """
-    message = text or config.MESSAGE_TEXT
+    message = text or config.message_text
     log.info("HTTP 发送（备用方案），Cookie=%s", mask_cookie(config.COOKIE))
 
     try:
