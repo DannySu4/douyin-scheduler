@@ -1,44 +1,46 @@
-name: Daily Douyin Scheduler
+name: 每日抖音调度器
 
 on:
-  # 每天固定时间跑（UTC 时间，下面示例 = 北京时间 09:00）
   schedule:
-    - cron: "0 1 * * *"   # 01:00 UTC = 09:00 CST（夏令时注意自行换算）
-  # 允许手动触发调试
-  workflow_dispatch:
+    - cron: "0 1 * * *"  # UTC 01:00 = 北京时间 09:00
+  workflow_dispatch:     # 允许手动触发调试
 
 jobs:
-  run:
+  send:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 15   # 超时设置（使用英文键名）
 
     steps:
-      - uses: actions/checkout@v4
+      - name: 检出代码
+        uses: actions/checkout@v4  # 必须使用英文 uses
 
-      - name: Set up Python
-        uses: setup-python@v5
-        with:
+      - name: 设置 Python
+        uses: actions/setup-python@v5 # 必须使用英文 uses 和正确路径
+        with:                     # 必须使用英文 with
           python-version: "3.11"
 
-      - name: Install dependencies
+      - name: 安装依赖
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          playwright install chromium
+          playwright install --with-deps chromium
 
-      - name: Run sender
+      - name: 写入 Cookie
+        run: echo "${{ secrets.DOUYIN_COOKIE }}" > cookies.txt
+
+      - name: 运行发送脚本
         env:
-          DOUYIN_COOKIE: ${{ secrets.DOUYIN_COOKIE }}
+          MODE: ${{ secrets.MODE }}
           TARGET_USER: ${{ secrets.TARGET_USER }}
           MESSAGE_TEXT: ${{ secrets.MESSAGE_TEXT }}
-        run: |
-          python main.py
+        run: python douyin_web.py
 
-      - name: Upload debug artifacts (on failure)
+      - name: 失败时上传调试日志
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: debug-logs
           path: |
-            logs/
+            debug-logs/
             *.png
+            *.html
