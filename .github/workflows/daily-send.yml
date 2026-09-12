@@ -38,7 +38,7 @@ jobs:
           MODE: ${{ secrets.MODE }}
           TARGET_USER: ${{ secrets.TARGET_USER }}
           MESSAGE_TEXT: ${{ secrets.MESSAGE_TEXT }}
-          DOUYIN_COOKIE: ${{ secrets.DOUYIN_COOKIE }}
+          DOUYIN_COOKIE: ${{ secrets.DOUUYIN_COOKIE }}
         run: python douyin_web.py
 
       - name: 失败时上传调试日志
