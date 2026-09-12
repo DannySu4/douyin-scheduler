@@ -1,16 +1,26 @@
-# 敏感信息
-.env
-*.cookie
-secrets/
-
-# Python
 __pycache__/
 *.py[cod]
-.venv/
-venv/
+.venv/ venv/ env/
+.pytest_cache/
+.mypy_cache/
 
-# 调试产物（GitHub Actions 会以 artifact 上传，不入库）
+# 密钥/配置
+.env
+.env.*
+*.cookie
+cookies.json
+secrets.json
+cookies.txt
+
+# 日志与调试产物
+*.log
 logs/
-*.png
-*.html
-pytest_cache/
+debug-logs/
+debug_*.png
+debug_*.html
+
+# 系统/IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
