@@ -2,8 +2,8 @@ name: 每日抖音私信发送
 
 on:
   schedule:
-    - cron: "0 1 * * *"
-  workflow_dispatch:
+    - cron: "0 1 * * *"   # UTC 01:00 = 北京时间 09:00
+  workflow_dispatch:       # 支持手动触发
 
 permissions:
   contents: read
@@ -28,18 +28,13 @@ jobs:
           pip install -r requirements.txt
           playwright install --with-deps chromium
 
-      - name: 写入 Cookie 调试
-        run: echo "Cookie 长度: ${#DOUYIN_COOKIE}"
-        env:
-          DOUYIN_COOKIE: ${{ secrets.DOUYIN_COOKIE }}
-
-      - name: 运行发送脚本
+      - name: 运行主程序
         env:
           MODE: ${{ secrets.MODE }}
           TARGET_USER: ${{ secrets.TARGET_USER }}
           MESSAGE_TEXT: ${{ secrets.MESSAGE_TEXT }}
           DOUYIN_COOKIE: ${{ secrets.DOUYIN_COOKIE }}
-        run: python douyin_web.py
+        run: python main.py
 
       - name: 失败时上传调试日志
         if: failure()
