@@ -20,10 +20,15 @@ class Config:
         self.mode = os.getenv("MODE", "cookie")
         self.target_user = os.getenv("TARGET_USER", "")
         self.message_text = os.getenv("MESSAGE_TEXT", "")
-        
+
         # 读取 Cookie（支持字符串和 Cookie-Editor 导出的 JSON）
         self.cookie_raw = os.getenv("DOUYIN_COOKIE", "")
         self.masked_cookie = "***" if self.cookie_raw else "(空)"
+
+    @property
+    def COOKIE(self) -> str:
+        """兼容旧代码，返回原始 cookie 字符串"""
+        return self.cookie_raw
 
     def get_cookies_list(self):
         """自动识别 Cookie 格式并转换为 Playwright 需要的列表"""
@@ -31,7 +36,7 @@ class Config:
         cookie_str = self.cookie_raw.strip()
         if not cookie_str:
             raise RuntimeError("DOUYIN_COOKIE 环境变量为空，请检查 GitHub Secrets 设置")
-            
+
         if cookie_str.startswith("["):
             try:
                 return json.loads(cookie_str)
@@ -59,6 +64,10 @@ class Config:
             missing.append("MESSAGE_TEXT")
         if not self.cookie_raw:
             missing.append("DOUYIN_COOKIE (如果是手动触发，请确认勾选了 Run workflow with secrets)")
-            
+
         if missing:
             raise RuntimeError(f"缺少必需的环境变量: {', '.join(missing)}")
+
+
+# 全局实例，供其他模块导入使用
+config = Config()
