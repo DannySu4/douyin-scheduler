@@ -3,13 +3,12 @@ name: 每日抖音私信发送
 on:
   schedule:
     - cron: "0 1 * * *"
-  workflow_dispatch:     # 必须有这一行，才能显示手动运行按钮
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  # ... 后面省略
   send:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -29,7 +28,7 @@ jobs:
           pip install -r requirements.txt
           playwright install --with-deps chromium
 
-      - name: 写入 Cookie (调试用)
+      - name: 写入 Cookie 调试
         run: echo "Cookie 长度: ${#DOUYIN_COOKIE}"
         env:
           DOUYIN_COOKIE: ${{ secrets.DOUYIN_COOKIE }}
