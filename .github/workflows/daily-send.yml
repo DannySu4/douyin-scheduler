@@ -28,14 +28,17 @@ jobs:
           pip install -r requirements.txt
           playwright install --with-deps chromium
 
-      - name: 写入 Cookie
-        run: echo "${{ secrets.DOUYIN_COOKIE }}" > cookies.txt
+      - name: 写入 Cookie (调试用)
+        run: echo "Cookie 长度: ${#DOUYIN_COOKIE}"
+        env:
+          DOUYIN_COOKIE: ${{ secrets.DOUYIN_COOKIE }}
 
       - name: 运行发送脚本
         env:
           MODE: ${{ secrets.MODE }}
           TARGET_USER: ${{ secrets.TARGET_USER }}
           MESSAGE_TEXT: ${{ secrets.MESSAGE_TEXT }}
+          DOUYIN_COOKIE: ${{ secrets.DOUYIN_COOKIE }}
         run: python douyin_web.py
 
       - name: 失败时上传调试日志
