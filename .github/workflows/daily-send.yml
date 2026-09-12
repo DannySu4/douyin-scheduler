@@ -2,12 +2,11 @@ name: 每日抖音私信发送
 
 on:
   schedule:
-    - cron: "0 1 * * *"         # UTC 01:00 = 北京时间 09:00
-  workflow_dispatch:             # 支持手动触发
+    - cron: "0 1 * * *"  # UTC 01:00 = 北京时间 09:00
+  workflow_dispatch:     # 支持手动触发
 
 permissions:
-  contents: read
-  secrets: read                  # 确保能读取 Secrets
+  contents: read         # 仅需读取仓库代码权限
 
 jobs:
   send:
@@ -29,22 +28,21 @@ jobs:
           pip install -r requirements.txt
           playwright install --with-deps chromium
 
-      - name: 写入 Cookie 文件
+      - name: 写入 Cookie
         run: echo "${{ secrets.DOUYIN_COOKIE }}" > cookies.txt
 
       - name: 运行发送脚本
         env:
-          MODE: web                      # 固定为 web 模式
-          DOUYIN_COOKIE: ${{ secrets.DOUYIN_COOKIE }}
+          MODE: ${{ secrets.MODE }}
           TARGET_USER: ${{ secrets.TARGET_USER }}
           MESSAGE_TEXT: ${{ secrets.MESSAGE_TEXT }}
         run: python douyin_web.py
 
-      - name: 上传失败调试文件
+      - name: 失败时上传调试日志
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: debug-logs-${{ github.run_id }}
+          name: debug-logs
           path: |
             debug-logs/
             *.png
