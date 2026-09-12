@@ -1,22 +1,26 @@
-name: 每日抖音调度器
+name: 每日抖音私信发送
 
 on:
   schedule:
-    - cron: "0 1 * * *"  # UTC 01:00 = 北京时间 09:00
-  workflow_dispatch:     # 允许手动触发调试
+    - cron: "0 1 * * *"         # UTC 01:00 = 北京时间 09:00
+  workflow_dispatch:             # 支持手动触发
+
+permissions:
+  contents: read
+  secrets: read                  # 确保能读取 Secrets
 
 jobs:
   send:
     runs-on: ubuntu-latest
-    timeout-minutes: 15   # 超时设置（使用英文键名）
+    timeout-minutes: 10
 
     steps:
       - name: 检出代码
-        uses: actions/checkout@v4  # 必须使用英文 uses
+        uses: actions/checkout@v4
 
       - name: 设置 Python
-        uses: actions/setup-python@v5 # 必须使用英文 uses 和正确路径
-        with:                     # 必须使用英文 with
+        uses: actions/setup-python@v5
+        with:
           python-version: "3.11"
 
       - name: 安装依赖
@@ -25,21 +29,22 @@ jobs:
           pip install -r requirements.txt
           playwright install --with-deps chromium
 
-      - name: 写入 Cookie
+      - name: 写入 Cookie 文件
         run: echo "${{ secrets.DOUYIN_COOKIE }}" > cookies.txt
 
       - name: 运行发送脚本
         env:
-          MODE: ${{ secrets.MODE }}
+          MODE: web                      # 固定为 web 模式
+          DOUYIN_COOKIE: ${{ secrets.DOUYIN_COOKIE }}
           TARGET_USER: ${{ secrets.TARGET_USER }}
           MESSAGE_TEXT: ${{ secrets.MESSAGE_TEXT }}
         run: python douyin_web.py
 
-      - name: 失败时上传调试日志
+      - name: 上传失败调试文件
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: debug-logs
+          name: debug-logs-${{ github.run_id }}
           path: |
             debug-logs/
             *.png
