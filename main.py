@@ -9,12 +9,9 @@ GitHub Actions 定时入口。
 """
 import os
 import sys
-from dotenv import load_dotenv
 
-load_dotenv()
-
-from utils import get_logger  # noqa
-from config import config  # noqa
+from config import config  # 现在 config 是全局实例
+from utils import get_logger
 
 log = get_logger()
 
@@ -24,14 +21,15 @@ def main() -> int:
     config.validate()
 
     mode = os.environ.get("MODE", "web").lower()
-    text = config.MESSAGE_TEXT
+    text = config.message_text
 
     if mode == "http":
         from protocol import send_via_http
         ok = send_via_http(text)
     else:
         from douyin_web import send_message
-        ok = send_message(text)
+        # send_message 接受 config 对象
+        ok = send_message(config)
 
     if ok:
         log.info("✅ 任务成功")
