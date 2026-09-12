@@ -2,13 +2,14 @@ name: 每日抖音私信发送
 
 on:
   schedule:
-    - cron: "0 1 * * *"  # UTC 01:00 = 北京时间 09:00
-  workflow_dispatch:     # 支持手动触发
+    - cron: "0 1 * * *"
+  workflow_dispatch:     # 必须有这一行，才能显示手动运行按钮
 
 permissions:
-  contents: read         # 仅需读取仓库代码权限
+  contents: read
 
 jobs:
+  # ... 后面省略
   send:
     runs-on: ubuntu-latest
     timeout-minutes: 10
